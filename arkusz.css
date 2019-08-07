@@ -1,0 +1,44 @@
+body{
+
+background-color:lightblue;
+font-family:fantasy;
+}
+
+canvas{
+position:absolute;
+top:20px;
+left:400px;
+}
+
+form{
+position:absolute;
+top:10px;
+left:10px;
+}
+
+button{
+position:absolute;
+top:620px;
+left:630px;
+height:40px;
+width:100px;
+}
+
+#Punkty
+{
+position:relative;
+top:20px;
+left:400px;
+height:30px;
+width:300px;
+z-index:1;
+}
+
+	#Punkty #wynik 
+	{
+	position:absolute;
+	left:85px;
+	}
+
+
+
