@@ -1,0 +1,23 @@
+{
+  "name": "color-lines",
+  "version": "1.0.0",
+  "description": "My approach to russian game color lines (Шарики). Popularized in Poland by kurnik.pl (playok.com) under the name kulki.",
+  "main": "kulki.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/matvs/color-lines.git"
+  },
+  "author": "matvs",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/matvs/color-lines/issues"
+  },
+  "homepage": "https://github.com/matvs/color-lines#readme",
+  "devDependencies": {
+    "typescript": "^5.2.2",
+    "webpack": "^5.89.0"
+  }
+}
