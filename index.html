@@ -1,31 +1,36 @@
 <html>
 <!DOCTYPE html>
+
 <head>
-<meta charset="utf-8"/>
-<script src="kulki.js"></script>
-<link href="arkusz.css" rel="stylesheet"/>
+    <!-- <meta charset="utf-8"/> -->
+    <script>var exports = {};</script>
+    <script src="bundle.js"></script>
+    <link href="arkusz.css" rel="stylesheet" />
 </head>
 
 <body>
 
-<form id="level" name="level" method="post">
-<label>Wybierz level (liczbę kolorów kulek):</label></br>
-<label><input type="radio" name="level_in" value="1"/>Pierwszy</label><br/>
-<label><input type="radio" name="level_in" value="2"/>Drugi</label><br/>
-<label><input type="radio" name="level_in" value="3"/>Trzeci</label><br/>
-<label><input type="radio" name="level_in" value="4"/>Czwarty</label><br/>
-<label><input type="radio" name="level_in" value="5"/>Piąty</label><br/>
-<label><input type="radio" name="level_in" value="6"/>Szósty</label><br/>
-<label><input type="radio" name="level_in" value="7" checked="checked" />Siódmy</label>
-</form>
+    <form id="level" name="level" method="post">
+        <fieldset>
+            <label>Wybierz level (liczbę kolorów kulek):</label></br>
+            <label><input type="radio" name="level_in" value="1" />Pierwszy</label><br />
+            <label><input type="radio" name="level_in" value="2" />Drugi</label><br />
+            <label><input type="radio" name="level_in" value="3" />Trzeci</label><br />
+            <label><input type="radio" name="level_in" value="4" />Czwarty</label><br />
+            <label><input type="radio" name="level_in" value="5" />Piąty</label><br />
+            <label><input type="radio" name="level_in" value="6" />Szósty</label><br />
+            <label><input type="radio" name="level_in" value="7" checked="checked" />Siódmy</label>
+        </fieldset>
+    </form>
 
-<p id="Punkty">Twoj wynik :
-<span id="wynik"></span>
-</p>
+    <p id="Punkty">Twoj wynik :
+        <span id="wynik"></span>
+    </p>
 
-<canvas id="plotno" width=585 height=585></canvas>
+    <canvas id="plotno" width=585 height=585></canvas>
 
-<button type="button" onclick="Rysuj_plansze()">Od nowa ;-)</button>
+    <button type="button" onclick="Rysuj_plansze()">Od nowa ;-)</button>
 
 </body>
+
 </html>
