@@ -40,7 +40,7 @@ export default class PointsCounter {
                 reset(null, 0);
             }
 
-            return [currentToken, counter];
+            return [currentToken, counter, score];
         }
         
 
@@ -53,7 +53,7 @@ export default class PointsCounter {
                         tokens[i][k] = null;
                     }
                 }
-                [currentToken, counter] = countTokens(i,j,tokens[i][j],currentToken,counter,removeFunc);
+                [currentToken, counter, score] = countTokens(i,j,tokens[i][j],currentToken,counter,removeFunc);
         
         } }
 
@@ -66,34 +66,47 @@ export default class PointsCounter {
                         tokens[k][i] = null;
                     }
                 }
-                [currentToken, counter] = countTokens(i,j,tokens[j][i],currentToken,counter,removeFunc);
+                [currentToken, counter, score] = countTokens(i,j,tokens[j][i],currentToken,counter,removeFunc);
         } }
 
-        const checkDiagonalFn = () => {
+
+        const checkDiagonalFn = (updateI: any, updateJ: any) => {
             let counter = 0;
             let currentToken = null;
             const isInBound = (x: number, y: number): boolean => x >= 0 && x < 9 && y >= 0 && y < 9;
             return (i: number, j: number): void => {
-                currentToken = tokens[i][j];
-                if (currentToken) { 
-                    counter = 1;
-                }
-                i += 1;
-                j -= 1;
+                // currentToken = tokens[i][j];
+                // if (currentToken) { 
+                //     counter = 1;
+                // }
+                // i += 1;
+                // j -= 1;
+                console.log(i,j);
                 const removeFunc = (i: number, j: number, counter: number): void => {
                     while(counter >= 0) {
                         tokens[i][j] = null;
-                        i -= 1;
-                        j += 1;
+                        // going back
+                        i = updateJ(i)
+                        j = updateI(j)
                         counter--;
                     }
                 }
                 while (isInBound(i,j)) {
-                    [currentToken, counter] = countTokens(i,j,tokens[i][j],currentToken,counter,removeFunc);
-                    i += 1;
-                    j -= 1;
-                    
+                    const ctx = (document.getElementById("plotno") as any).getContext("2d");
+                
+                    ctx.beginPath();
+                    ctx.fillStyle = "rgba(256,256,256,1)";
+                    ctx.fillRect(j * 55 + 50, i * 55 + 50, 25, 25);
+            
+                    [currentToken, counter, score] = countTokens(i,j,tokens[i][j],currentToken,counter,removeFunc);
+                    i = updateI(i)
+                    j = updateJ(j)
                 }
+                if (counter >= 5 && currentToken != null) {
+                    score += counter;
+                    removeFunc(i,j,counter);
+                }
+
             }
 
         }
@@ -101,9 +114,13 @@ export default class PointsCounter {
         for (let i = 0; i < 9; ++i) {
             const checkHorizontal = checkHorizontalFn();
             const checkVertical = checkVerticalFn();
-            const checkDiagonal = checkDiagonalFn();
             for (let j = 0; j < 9; ++j) {
                 if (i == 0) {
+                    const checkDiagonal = checkDiagonalFn((x: number) => x + 1, (x: number) => x - 1);
+                    checkDiagonal(i, j);
+                }
+                if (i == 8) {
+                    const checkDiagonal = checkDiagonalFn((x: number) => x - 1, (x: number) => x + 1);
                     checkDiagonal(i, j);
                 }
                 checkHorizontal(i, j);

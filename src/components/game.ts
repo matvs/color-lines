@@ -77,6 +77,9 @@ export class Game {
             if (this.metadata.tokens[row][col] == null) {
                 this.metadata.tokens[row][col] = new Circle(Object.values(Colors)[Math.floor(Math.random() * this.getLevel())], 
                 this.board['ctx'], col * 55 + 75 , row * 55 + 75);
+
+                this.metadata.tokens[row][col] = new Circle(Colors.Blue,
+                this.board['ctx'], col * 55 + 75 , row * 55 + 75);
                 i++;
             }
         }

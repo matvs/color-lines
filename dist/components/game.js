@@ -59,6 +59,7 @@ class Game {
             let row = Math.floor(Math.random() * 9);
             if (this.metadata.tokens[row][col] == null) {
                 this.metadata.tokens[row][col] = new circle_1.Circle(Object.values(colors_1.Colors)[Math.floor(Math.random() * this.getLevel())], this.board['ctx'], col * 55 + 75, row * 55 + 75);
+                this.metadata.tokens[row][col] = new circle_1.Circle(colors_1.Colors.Blue, this.board['ctx'], col * 55 + 75, row * 55 + 75);
                 i++;
             }
         }
