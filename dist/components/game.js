@@ -7,10 +7,12 @@ exports.GameState = exports.Game = void 0;
 const board_1 = require("./board");
 const circle_1 = require("./circle");
 const colors_1 = require("./colors");
-const pathFinder_1 = __importDefault(require("./services/pathFinder"));
-const pointsCounter_1 = __importDefault(require("./services/pointsCounter"));
+const pathFinder_1 = __importDefault(require("../services/pathFinder"));
+const pointsCounter_1 = __importDefault(require("../services/pointsCounter"));
+const boardService_1 = __importDefault(require("../services/boardService"));
 class Game {
     constructor() {
+        this.boardService = new boardService_1.default();
         this.pathFinderService = new pathFinder_1.default();
         this.pointsCounterService = new pointsCounter_1.default();
         this.board = new board_1.Board(9, 9, document.getElementById("plotno"));
@@ -29,7 +31,7 @@ class Game {
         this.state = GameState.Running;
         this.board.draw(this.state, this.metadata);
     }
-    renderResult() {
+    renderScore() {
         this.pointsContainer.innerHTML = this.metadata.score.toString();
     }
     getLevel() {
@@ -50,7 +52,10 @@ class Game {
                 this.metadata.tokens[i][j] = null;
             }
         }
+        this.metadata.nextTokens = [];
         this.generateTokens(9);
+        this.fillInTokens();
+        this.generateTokens(3);
     }
     generateTokens(n = 3) {
         let i = 0;
@@ -58,11 +63,20 @@ class Game {
             let col = Math.floor(Math.random() * 9);
             let row = Math.floor(Math.random() * 9);
             if (this.metadata.tokens[row][col] == null) {
-                this.metadata.tokens[row][col] = new circle_1.Circle(Object.values(colors_1.Colors)[Math.floor(Math.random() * this.getLevel())], this.board['ctx'], col * 55 + 75, row * 55 + 75);
-                this.metadata.tokens[row][col] = new circle_1.Circle(colors_1.Colors.Blue, this.board['ctx'], col * 55 + 75, row * 55 + 75);
+                this.metadata.nextTokens.push(new circle_1.Circle(Object.values(colors_1.Colors)[Math.floor(Math.random() * this.getLevel())], this.board['ctx'], col * 55 + 75, row * 55 + 75));
+                // this.metadata.nextTokens.push( new Circle(Colors.Blue,
+                // this.board['ctx'], col * 55 + 75 , row * 55 + 75));
                 i++;
             }
         }
+    }
+    fillInTokens() {
+        for (const token of this.metadata.nextTokens) {
+            const col = this.boardService.getColumnFromX(token.x);
+            const row = this.boardService.getRowFromY(token.y);
+            this.metadata.tokens[row][col] = token;
+        }
+        this.metadata.nextTokens = [];
     }
     onClick(col, row) {
         if (this.state != GameState.Running) {
@@ -70,14 +84,9 @@ class Game {
         }
         if (this.metadata.selectedToken) {
             if (this.pathFinderService.isLegalMove(this.metadata.selectedToken.col, this.metadata.selectedToken.row, col, row, this.metadata.tokens)) {
-                let path = this.pathFinderService.getPath(this.metadata.selectedToken.col, this.metadata.selectedToken.row, col, row, this.metadata.tokens);
-                this.metadata.path = this.normalizePath(path);
-                this.metadata.selectedToken.token.x = col * 55 + 75;
-                this.metadata.selectedToken.token.y = row * 55 + 75;
-                this.metadata.tokens[row][col] = this.metadata.selectedToken.token;
-                this.metadata.tokens[this.metadata.selectedToken.row][this.metadata.selectedToken.col] = null;
-                this.metadata.selectedToken = null;
-                this.generateTokens();
+                this.handleLegalMove(col, row);
+                this.fillInTokens();
+                this.generateTokens(3);
             }
             else {
                 this.metadata.selectedToken = null;
@@ -86,8 +95,27 @@ class Game {
         else if (this.metadata.tokens[row][col] != null) {
             this.metadata.selectedToken = { token: this.metadata.tokens[row][col], row, col };
         }
-        this.metadata.score += this.pointsCounterService.checkForPoints(this.metadata.tokens);
+        this.updateScore();
         this.board.draw(this.state, this.metadata);
+    }
+    handleLegalMove(col, row) {
+        let path = this.pathFinderService.getPath(this.metadata.selectedToken.col, this.metadata.selectedToken.row, col, row, this.metadata.tokens);
+        this.metadata.path = this.normalizePath(path);
+        this.swapTokens(col, row);
+    }
+    updateScore() {
+        this.metadata.score += this.pointsCounterService.countPoints(this.metadata.tokens);
+        this.renderScore();
+    }
+    swapTokens(col, row) {
+        this.updateCoordsForSelectedToken(col, row);
+        this.metadata.tokens[row][col] = this.metadata.selectedToken.token;
+        this.metadata.tokens[this.metadata.selectedToken.row][this.metadata.selectedToken.col] = null;
+        this.metadata.selectedToken = null;
+    }
+    updateCoordsForSelectedToken(col, row) {
+        this.metadata.selectedToken.token.x = this.boardService.getXFromColumn(col);
+        this.metadata.selectedToken.token.y = this.boardService.getYFromRow(row);
     }
     normalizePath(path) {
         const moves = {

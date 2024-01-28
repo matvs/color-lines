@@ -1,6 +1,6 @@
 export default class PointsCounter {
 
-    public checkForPoints(tokens): number {
+    public countPoints(tokens): number {
         let score = 0;
     
 

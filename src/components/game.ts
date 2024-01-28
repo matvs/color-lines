@@ -1,9 +1,9 @@
 import { Board } from "./board";
 import { Circle } from "./circle";
 import { Colors } from "./colors";
-import PathFinder from "./services/pathFinder";
-import PointsCounter from "./services/pointsCounter";
-
+import PathFinder from "../services/pathFinder";
+import PointsCounter from "../services/pointsCounter";
+import BoardService from "../services/boardService";
 export class Game {
     private state: GameState;
     private metadata: GameMetadata;
@@ -11,6 +11,7 @@ export class Game {
     private pointsContainer: HTMLElement;
     private pathFinderService: PathFinder;
     private pointsCounterService: PointsCounter;
+    private boardService = new BoardService();
 
     constructor() {
         this.pathFinderService = new PathFinder();
@@ -38,7 +39,7 @@ export class Game {
 
     }
 
-    private renderResult(): void {
+    private renderScore(): void {
         this.pointsContainer.innerHTML = this.metadata.score.toString();
     }
 
@@ -64,7 +65,10 @@ export class Game {
             }
         }
 
+        this.metadata.nextTokens = [];
         this.generateTokens(9);
+        this.fillInTokens()
+        this.generateTokens(3);
 
 
     }
@@ -75,14 +79,23 @@ export class Game {
             let col = Math.floor(Math.random() * 9);
             let row = Math.floor(Math.random() * 9);
             if (this.metadata.tokens[row][col] == null) {
-                this.metadata.tokens[row][col] = new Circle(Object.values(Colors)[Math.floor(Math.random() * this.getLevel())], 
-                this.board['ctx'], col * 55 + 75 , row * 55 + 75);
+                this.metadata.nextTokens.push(new Circle(Object.values(Colors)[Math.floor(Math.random() * this.getLevel())], 
+                this.board['ctx'], col * 55 + 75 , row * 55 + 75));
 
-                this.metadata.tokens[row][col] = new Circle(Colors.Blue,
-                this.board['ctx'], col * 55 + 75 , row * 55 + 75);
+                // this.metadata.nextTokens.push( new Circle(Colors.Blue,
+                // this.board['ctx'], col * 55 + 75 , row * 55 + 75));
                 i++;
             }
         }
+    }
+
+    private fillInTokens(): void {  
+        for (const token of this.metadata.nextTokens) {
+            const col = this.boardService.getColumnFromX(token.x);
+            const row = this.boardService.getRowFromY(token.y);
+            this.metadata.tokens[row][col] = token;
+        }
+        this.metadata.nextTokens = [];
     }
 
 
@@ -92,26 +105,46 @@ export class Game {
         }
         if (this.metadata.selectedToken) {
             if (this.pathFinderService.isLegalMove(this.metadata.selectedToken.col, this.metadata.selectedToken.row, col, row, this.metadata.tokens)) {
-                let path = this.pathFinderService.getPath(this.metadata.selectedToken.col, this.metadata.selectedToken.row, col, row, this.metadata.tokens);
-                this.metadata.path = this.normalizePath(path)
-                this.metadata.selectedToken.token.x = col * 55 + 75;
-                this.metadata.selectedToken.token.y = row * 55 + 75;
-                this.metadata.tokens[row][col] = this.metadata.selectedToken.token;
-                this.metadata.tokens[this.metadata.selectedToken.row][this.metadata.selectedToken.col] = null;
-                this.metadata.selectedToken = null;
-
-                this.generateTokens();
-             } else {
+                this.handleLegalMove(col, row);
+                this.fillInTokens()
+                this.generateTokens(3);
+            } else {
                 this.metadata.selectedToken = null;
             }
         } else if (this.metadata.tokens[row][col] != null) { 
             this.metadata.selectedToken =  {token: this.metadata.tokens[row][col], row, col };
         }
-        this.metadata.score += this.pointsCounterService.checkForPoints(this.metadata.tokens);
+
+        this.updateScore();
         this.board.draw(this.state, this.metadata);
     }
 
+    private handleLegalMove(col: number, row: number): void {
+        let path = this.pathFinderService.getPath(this.metadata.selectedToken.col, this.metadata.selectedToken.row, col, row, this.metadata.tokens);
+        this.metadata.path = this.normalizePath(path)
+        
+        this.swapTokens(col, row);
+    }
 
+    private updateScore(): void {   
+        this.metadata.score += this.pointsCounterService.countPoints(this.metadata.tokens);
+        this.renderScore();
+    }
+
+
+    private swapTokens(col: number, row: number): void {
+        this.updateCoordsForSelectedToken(col, row);
+
+        this.metadata.tokens[row][col] = this.metadata.selectedToken.token;
+        this.metadata.tokens[this.metadata.selectedToken.row][this.metadata.selectedToken.col] = null;
+        
+        this.metadata.selectedToken = null;
+    }
+
+    private updateCoordsForSelectedToken(col: number, row: number): void {
+        this.metadata.selectedToken.token.x = this.boardService.getXFromColumn(col);
+        this.metadata.selectedToken.token.y = this.boardService.getYFromRow(row);
+    }
     private normalizePath(path: Array<Array<number>>): any {
         const moves = {
             'up': [0, -1],
@@ -151,6 +184,7 @@ export interface GameMetadata {
     selectedToken: SelectedTokenInterface | null;
     tokens: Array<Array<Circle | null>>;
     path?: any;
+    nextTokens?: Array<Circle>;
 }
 
 export interface SelectedTokenInterface {
